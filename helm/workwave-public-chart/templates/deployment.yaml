@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: workwave-app
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          image: queensley/workwave:latest
           ports:
             - containerPort: 80
