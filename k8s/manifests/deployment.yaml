@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: workwave-app
-          image: addImage
+          image: queensley/workwave:latest
           ports:
             - containerPort: 80
