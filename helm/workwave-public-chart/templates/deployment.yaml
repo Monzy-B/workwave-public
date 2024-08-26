@@ -5,7 +5,7 @@ metadata:
   labels:
     app: workwave-app
 spec:
-  replicas: 2
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: workwave-app
@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: workwave-app
-          image: queensley/workwave:latest
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           ports:
             - containerPort: 80
