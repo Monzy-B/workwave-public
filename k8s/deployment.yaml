@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workwave
+  labels:
+    app: workwave
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: workwave  
+  template:
+    metadata:
+      labels:
+        app: workwave  
+    spec:
+      containers:
+        - name: workwave
+          image: peacerotimi6/workwave2:{{ . values.image.tag }}
+          ports:
+            - containerPort: 80
