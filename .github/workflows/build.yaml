@@ -1,110 +1,37 @@
-name: Building 
-on:
- push:
-    branches:
-      - master
-      - develop
- pull_request:
-    types: [merged]
+# name: Build and Push Docker Image
 
-permissions: 
-  contents: read
-  packages: write    
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
 
-jobs:   
- docker-build-and-push:
-    name: "Docker Build and Push"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v6
+#       - name: Extract Docker image metadata
+#         id: meta
+#         uses: docker/metadata-action@v6
+#         with:
+#           images: ${{ secrets.DOCKER_USERNAME }}/my-image
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v4
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build Docker image
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/workwave:${GITHUB_SHA::5} .
-          
-      - name: Push to Dockerhub
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-        if: github.ref == 'refs/heads/master' && (github.event.pull_request.merged == true || github.event_name == 'push')
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/workwave:${GITHUB_SHA::5}
-
- terraform:
-    permissions: 
-      contents: read
-      packages: write
-
-    name: "Terraform"
-    runs-on: ubuntu-latest
-    defaults:
-       run:
-         working-directory: Terraform
-    steps:
-      - name: Checkout repositories
-        uses: actions/checkout@v2
-  
-      - name: Setup SSH
-        run: |
-          mkdir ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa.pub
-
-      - uses: release-drafter/release-drafter@v6
-        with:
-          config-name: release-drafter.yml
-          disable-autolabeler: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN}}
-          
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: eu-west-2
-  
-      # - name: Setup Terraform
-      #   uses: hashicorp/setup-terraform@v1
-          
-      # - name: Terraform Init
-      #   run: terraform init
-          
-      # - name: Terraform Plan
-      #   run: terraform plan -var-file='var/dev.tfvars'
-          
-      # - name: Terraform Apply
-      #   if: github.ref == 'refs/heads/master' && (github.event.pull_request.merged == true || github.event_name == 'push')
-      #   run: terraform apply -auto-approve -var-file='var/dev.tfvars'
-  
-      # - name: Install Ansible
-      #   run: sudo apt-get update && sudo apt-get install -y ansible
-  
-      # # - name: Set working directory
-      # #   run: cd workwave/ansible
-      # #   shell: bash
-  
-      # - name: Run Ansible playbook
-      #   run: |
-      #     mkdir -p Ansible
-      #     echo "${{ secrets.Ansible_Playbook }}" > Ansible/deploy
-      #     echo "[ec2_instances]" > Ansible/ansible_inventory.ini
-      #     echo "${{ steps.terraform.outputs.ec2_public_ip }}" >> Ansible/ansible_inventory.ini
-      #     ansible-playbook -i Ansible/ansible_inventory.ini Ansible/deploy
-  
-  
-      # - name: Terraform Destroy
-      #   if: github.ref == 'refs/heads/master' && (github.event.pull_request.merged == true || github.event_name == 'push')
-      #   run: terraform destroy -auto-approve -var-file='var/dev.tfvars'
-
-
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v4
       
-
+#       - name: Build and push Docker image
+#         uses: docker/build-push-action@v7
+#         with:
+#           push: ${{ github.event_name != 'pull_request' }}
+#           tags: ${{ steps.meta.outputs.tags }}
+#           annotations: ${{ steps.meta.outputs.annotations }}
+#           provenance: true
+#           sbom: true
